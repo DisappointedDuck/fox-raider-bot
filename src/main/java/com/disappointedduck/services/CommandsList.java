@@ -176,6 +176,7 @@ public class CommandsList {
         Set<String> names = currentEvents.getNamesByPlayerId(message.getAuthor().getId());
         if (names.size() == 0) {
             message.getChannel().sendMessage("Записей нет").queue();
+            return;
         }
         message.getChannel().sendMessage(names.stream().reduce((result, name) -> result += name + "\n").orElse("Ошибко T_T")).queue();
     }
