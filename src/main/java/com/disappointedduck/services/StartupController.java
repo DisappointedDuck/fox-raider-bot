@@ -37,7 +37,6 @@ public class StartupController {
                 }
                 if (text.startsWith("<hard-game-event>")) {
                     startupService.bootHardGameEvent(msg);
-                    continue;
                 }
             } catch (Exception e) {
                 log.error("Could not load saved game" + e);
