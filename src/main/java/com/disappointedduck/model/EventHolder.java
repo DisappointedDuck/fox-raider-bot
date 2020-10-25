@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +83,13 @@ public class EventHolder {
 
     public boolean messageHasEvents(String id) {
         return gameEvents.containsKey(id);
+    }
+
+    public List<GameEvent> findAllByScheduleDay(DayOfWeek today) {
+        return gameEvents.values().stream()
+                .filter(e -> e.getSchedule().stream().anyMatch(d -> d.getDayOfWeek().equals(today))
+                && e.getStartTime().getDayOfMonth() == LocalDate.now().getDayOfMonth())
+                .collect(Collectors.toList());
     }
 
     public int getSize() {
