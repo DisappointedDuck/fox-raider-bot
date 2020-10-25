@@ -1,7 +1,6 @@
 package com.disappointedduck.model;
 
 import com.disappointedduck.dto.GameEventDto;
-import com.disappointedduck.services.StartupController;
 import com.disappointedduck.utility.CommonProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -2,6 +2,7 @@ package com.disappointedduck.services;
 
 import com.disappointedduck.model.EventHolder;
 import com.disappointedduck.model.GameEvent;
+import com.disappointedduck.utility.CommonProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -52,8 +54,9 @@ public class ScheduleService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         LocalTime startHour = LocalTime.parse(e.getStartTime().toString(), formatter);
         LocalDate now = LocalDate.now();
+        e.setPlayers(new ArrayList<>());
         e.setStartTime(LocalDateTime.parse(now.toString() + startHour.toString(), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
-        e.sendStartMessage();
+        CommonProperties.GUILD.getTextChannelById(CommonProperties.CHANNEL).sendMessage(e.getGameInfoWithMention()).queue();
     }
 }
 
