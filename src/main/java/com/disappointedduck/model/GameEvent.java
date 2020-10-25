@@ -43,6 +43,7 @@ public class GameEvent {
         this.playersConfig = gameEventDto.getPlayersConfig();
         this.players = gameEventDto.getPlayers();
         this.message = message;
+        this.schedule = gameEventDto.getSchedule();
         this.mentionedRole = gameEventDto.getMentionedRole();
     }
 
