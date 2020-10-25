@@ -1,7 +1,7 @@
 package com.disappointedduck.listeners;
 
 import com.disappointedduck.services.CommandsList;
-import com.disappointedduck.services.StartupService;
+import com.disappointedduck.services.StartupController;
 import com.disappointedduck.utility.CommonUtilities;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -18,13 +18,13 @@ import java.util.Arrays;
 @Service
 public class MessageListener extends ListenerAdapter {
     private final CommandsList commandsList;
-    private final StartupService startupService;
+    private final StartupController startupController;
 
     @SneakyThrows
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        if (!startupService.getInitialized()) {
-            startupService.botStartup(event.getMessage());
+        if (!startupController.getInitialized()) {
+            startupController.botStartup(event.getMessage());
         }
 
         try {
@@ -50,9 +50,14 @@ public class MessageListener extends ListenerAdapter {
             }
             if (msgText.startsWith("!sign")) {
                 commandsList.createGameRequest(event);
+                return;
             }
             if (msgText.startsWith("!role")) {
                 commandsList.addOrRemoveUserRole(event.getMessage());
+                return;
+            }
+            if (msgText.startsWith("!myevents")) {
+                commandsList.aboutMe(event.getMessage());
             }
 
         } catch (Exception e) {

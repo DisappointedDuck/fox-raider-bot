@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -71,7 +72,18 @@ public class EventHolder {
         gameEvents.remove(id);
     }
 
+    public Set<String> getNamesByPlayerId(String id) {
+        return gameEvents.values().stream()
+                .filter(g -> g.getPlayers().stream().anyMatch(p -> p.getId().equals(id)))
+                .map(GameEvent::getName)
+                .collect(Collectors.toSet());
+    }
+
     public boolean messageHasEvents(String id) {
         return gameEvents.containsKey(id);
+    }
+
+    public int getSize() {
+        return gameEvents.size();
     }
 }

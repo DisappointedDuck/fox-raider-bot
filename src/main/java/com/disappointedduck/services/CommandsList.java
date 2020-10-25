@@ -21,15 +21,14 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -61,8 +60,7 @@ public class CommandsList {
                 .mentionedRole(ServerRoleEnum.getByTitle((String) map.get("mention")))
                 .build();
 
-        //MessageAction result = event.getGuild().getTextChannelById("767117359520415745").sendMessage("<@&767116667535884338> Создана игра: \n" + game.getGameInfo());
-        MessageAction result = event.getGuild().getTextChannelById(CommonProperties.CHANNEL).sendMessage(game.getGameInfoWithMention());
+        MessageAction result = CommonProperties.GUILD.getTextChannelById(CommonProperties.CHANNEL).sendMessage(game.getGameInfoWithMention());
         CommonUtilities.addWhiteCheckmark(message);
         result.queue(msg -> {
             game.setMessage(msg);
@@ -72,7 +70,7 @@ public class CommandsList {
             currentEvents.addEvent(game);
             GameEventDto gameEventDto = new GameEventDto(game);
             try {
-                MessageAction store = event.getGuild().getTextChannelById(CommonProperties.STORE).sendMessage("<game-event>" + objectMapper.writeValueAsString(gameEventDto));
+                MessageAction store = CommonProperties.GUILD.getTextChannelById(CommonProperties.STORE).sendMessage("<game-event>" + objectMapper.writeValueAsString(gameEventDto));
                 store.queue(game::setStoredMessage);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -113,14 +111,14 @@ public class CommandsList {
                 .mentionedRole(ServerRoleEnum.getByTitle((String) map.get("mention")))
                 .build();
 
-        MessageAction result = event.getGuild().getTextChannelById(CommonProperties.CHANNEL).sendMessage(hardGameEvent.getGameInfoWithMention());
+        MessageAction result = CommonProperties.GUILD.getTextChannelById(CommonProperties.CHANNEL).sendMessage(hardGameEvent.getGameInfoWithMention());
         CommonUtilities.addWhiteCheckmark(message);
         result.queue(msg -> {
             hardGameEvent.setMessage(msg);
             currentEvents.addEvent(hardGameEvent);
             GameEventDto gameEventDto = new GameEventDto(hardGameEvent);
             try {
-                MessageAction store = event.getGuild().getTextChannelById(CommonProperties.STORE).sendMessage("<hard-game-event>" + objectMapper.writeValueAsString(gameEventDto));
+                MessageAction store = CommonProperties.GUILD.getTextChannelById(CommonProperties.STORE).sendMessage("<hard-game-event>" + objectMapper.writeValueAsString(gameEventDto));
                 store.queue(hardGameEvent::setStoredMessage);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -152,10 +150,10 @@ public class CommandsList {
             }
             if (role == ServerRoleEnum.INACTIVE) {
                 List<ServerRoleEnum> roles = Arrays.stream(ServerRoleEnum.values()).filter(ServerRoleEnum::isPermittedForBot).collect(Collectors.toList());
-                roles.forEach(r -> message.getGuild().removeRoleFromMember(message.getAuthor().getId(), message.getGuild().getRoleById(r.getId())).queue());
-                message.getGuild().getTextChannelById("767530219921735690").sendMessage(message.getMember().getEffectiveName() + "ушел в инактив").queue();
+                roles.forEach(r -> CommonProperties.GUILD.removeRoleFromMember(message.getAuthor().getId(), CommonProperties.GUILD.getRoleById(r.getId())).queue());
+                CommonProperties.GUILD.getTextChannelById("767530219921735690").sendMessage(message.getMember().getEffectiveName() + "ушел в инактив").queue();
             }
-            message.getGuild().addRoleToMember(message.getAuthor().getId(), message.getGuild().getRoleById(role.getId())).queue();
+            CommonProperties.GUILD.addRoleToMember(message.getAuthor().getId(), CommonProperties.GUILD.getRoleById(role.getId())).queue();
             CommonUtilities.addWhiteCheckmark(message);
         } else if (text.contains("!remove")) {
             String roleName = text.replace("!remove", "").trim();
@@ -164,22 +162,17 @@ public class CommandsList {
                 throw new ServerRoleNotPermittedException();
             }
             if (role == ServerRoleEnum.INACTIVE) {
-
-                message.getGuild().addRoleToMember(message.getAuthor().getId(), message.getGuild().getRoleById("767462301002760234")).queue();
-                message.getGuild().getTextChannelById("767530219921735690").sendMessage(message.getMember().getEffectiveName() + "вернулся из инактива").queue();
+                CommonProperties.GUILD.addRoleToMember(message.getAuthor().getId(), CommonProperties.GUILD.getRoleById("767462301002760234")).queue();
+                CommonProperties.GUILD.getTextChannelById("767530219921735690").sendMessage(message.getMember().getEffectiveName() + "вернулся из инактива").queue();
             }
-            message.getGuild().removeRoleFromMember(message.getAuthor().getId(), message.getGuild().getRoleById(role.getId())).queue();
+            CommonProperties.GUILD.removeRoleFromMember(message.getAuthor().getId(), CommonProperties.GUILD.getRoleById(role.getId())).queue();
             CommonUtilities.addWhiteCheckmark(message);
         } else throw new ServerRoleNotFoundException();
     }
 
-
-    @Scheduled(fixedDelay = 60000)
-    public void shootEvents() {
-        for (GameEvent e : currentEvents.findAllReady()) {
-            currentEvents.removeEventByMessageId(e.getMessage().getId());
-            e.sendStartMessage();
-        }
+    public void aboutMe(Message message){
+       Set<String> names = currentEvents.getNamesByPlayerId(message.getAuthor().getId());
+       message.getChannel().sendMessage(names.stream().reduce((result, name) -> result += name + "\n").orElse("Ошибко T_T")).queue();
     }
 
     public void tryDeletingEvent(MessageDeleteEvent event) {

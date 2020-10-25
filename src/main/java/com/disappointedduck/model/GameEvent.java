@@ -1,7 +1,7 @@
 package com.disappointedduck.model;
 
 import com.disappointedduck.dto.GameEventDto;
-import com.disappointedduck.services.CommandsList;
+import com.disappointedduck.services.StartupController;
 import com.disappointedduck.utility.CommonProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,6 +34,7 @@ public class GameEvent {
     protected Message message;
     protected ServerRoleEnum mentionedRole;
     protected Message storedMessage;
+    protected List<WeekEnum> schedule;
 
     public GameEvent(GameEventDto gameEventDto, Message message) {
         this.name = gameEventDto.getName();
@@ -98,8 +99,7 @@ public class GameEvent {
     }
 
     public void sendStartMessage() {
-        //message.getGuild().getTextChannelById("767117359520415745").sendMessage(String.format(GAME_STARTED, name, mentionSigned())).queue();
-        message.getGuild().getTextChannelById(CommonProperties.CHANNEL).sendMessage(String.format(GAME_STARTED, name, mentionSigned())).queue();
+        CommonProperties.GUILD.getTextChannelById(CommonProperties.CHANNEL).sendMessage(String.format(GAME_STARTED, name, mentionSigned())).queue();
     }
 
     public void addPlayer(Player player) {

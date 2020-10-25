@@ -9,53 +9,32 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Message;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class StartupService {
-    @Value("${channel}")
-    public String CHANNEL;
-    @Value("${store}")
-    public String STORE;
-
-    private static boolean initialized = false;
     private final EventHolder eventHolder;
     private final ObjectMapper objectMapper;
 
-    public void botStartup(Message message) throws JsonProcessingException {
-        CommonProperties.CHANNEL = CHANNEL;
-        CommonProperties.STORE = STORE;
-        List<Message> history = message.getGuild().getTextChannelById(CommonProperties.STORE).getHistory().retrievePast(20).complete();
-        for (Message msg : history) {
-            String text = msg.getContentDisplay();
-            GameEventDto gameEventDto;
-            GameEvent gameEvent;
-            if (text.startsWith("<game-event>")) {
-                text = text.replaceFirst("<game-event>", "");
-                gameEventDto = objectMapper.readValue(text, GameEventDto.class);
-                Message gameMessage = message.getGuild().getTextChannelById(gameEventDto.getChannelId()).retrieveMessageById(gameEventDto.getMessageId()).complete();
-                gameEvent = new GameEvent(gameEventDto, gameMessage);
-            } else {
-                if (text.startsWith("<hard-game-event>")) {
-                    text = text.replaceFirst("<hard-game-event>", "");
-                    gameEventDto = objectMapper.readValue(text, GameEventDto.class);
-                    Message gameMessage = message.getGuild().getTextChannelById(gameEventDto.getChannelId()).retrieveMessageById(gameEventDto.getMessageId()).complete();
-                    gameEvent = new HardGameEvent(gameEventDto, gameMessage);
-                    gameEventDto.getRequests().forEach((channel, id) -> {
-                        ((HardGameEvent) gameEvent).getRequests().add(message.getGuild().getTextChannelById(channel).retrieveMessageById(id).complete());
-                    });
-                } else throw new RuntimeException();
-            }
-            gameEvent.setStoredMessage(msg);
-            eventHolder.addEvent(gameEvent);
-            initialized = true;
-        }
+    public void bootGameEvent(Message msg) throws JsonProcessingException {
+        String text = msg.getContentDisplay().replaceFirst("<game-event>", "");
+        GameEventDto gameEventDto = objectMapper.readValue(text, GameEventDto.class);
+        Message gameMessage = CommonProperties.GUILD.getTextChannelById(gameEventDto.getChannelId()).retrieveMessageById(gameEventDto.getMessageId()).complete();
+        GameEvent gameEvent = new GameEvent(gameEventDto, gameMessage);
+        gameEvent.setStoredMessage(msg);
+        eventHolder.addEvent(gameEvent);
     }
 
-    public boolean getInitialized() {
-        return initialized;
+    public void bootHardGameEvent(Message msg) throws JsonProcessingException {
+        String text = msg.getContentDisplay().replaceFirst("<hard-game-event>", "");
+        GameEventDto gameEventDto = objectMapper.readValue(text, GameEventDto.class);
+        Message gameMessage = msg.getGuild().getTextChannelById(gameEventDto.getChannelId()).retrieveMessageById(gameEventDto.getMessageId()).complete();
+        HardGameEvent gameEvent = new HardGameEvent(gameEventDto, gameMessage);
+        gameEventDto.getRequests().forEach((channel, id) -> {
+            gameEvent.getRequests().add(msg.getGuild().getTextChannelById(channel).retrieveMessageById(id).complete());
+        });
+        gameEvent.setStoredMessage(msg);
+        eventHolder.addEvent(gameEvent);
     }
 }
