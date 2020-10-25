@@ -4,6 +4,7 @@ import com.disappointedduck.model.GameEvent;
 import com.disappointedduck.model.HardGameEvent;
 import com.disappointedduck.model.Player;
 import com.disappointedduck.model.ServerRoleEnum;
+import com.disappointedduck.model.WeekEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class GameEventDto {
     protected List<Player> players;
     protected String messageId;
     protected String channelId;
+    protected List<WeekEnum> schedule;
     protected ServerRoleEnum mentionedRole;
     protected Map<String, String> requests;
     protected String orgId;
@@ -39,6 +41,7 @@ public class GameEventDto {
         this.messageId = gameEvent.getMessage().getId();
         this.channelId = gameEvent.getMessage().getChannel().getId();
         this.mentionedRole = gameEvent.getMentionedRole();
+        this.schedule = gameEvent.getSchedule();
     }
 
     public GameEventDto(HardGameEvent gameEvent) {
@@ -52,6 +55,7 @@ public class GameEventDto {
         this.mentionedRole = gameEvent.getMentionedRole();
         this.orgId = gameEvent.getOrgId();
         this.requests = createMapOfRequests(gameEvent.getRequests());
+        this.schedule = gameEvent.getSchedule();
     }
 
     private Map<String, String> createMapOfRequests(List<Message> requests) {
