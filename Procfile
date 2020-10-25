@@ -1,1 +1,1 @@
-worker: java -jar target/fox-raider-bot-1.2-SNAPSHOT.jar
+worker: java -jar target/fox-raider-bot-1.3-SNAPSHOT.jar
