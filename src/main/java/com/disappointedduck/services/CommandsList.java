@@ -10,6 +10,7 @@ import com.disappointedduck.model.EventHolder;
 import com.disappointedduck.model.GameEvent;
 import com.disappointedduck.model.HardGameEvent;
 import com.disappointedduck.model.ServerRoleEnum;
+import com.disappointedduck.model.WeekEnum;
 import com.disappointedduck.utility.CommonProperties;
 import com.disappointedduck.utility.CommonUtilities;
 import com.disappointedduck.utility.MessageTextParser;
@@ -21,7 +22,6 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -57,6 +57,7 @@ public class CommandsList {
                 .playersConfig((Integer[]) map.get("people"))
                 .text((String) map.get("text"))
                 .players(new ArrayList<>())
+                .schedule((List<WeekEnum>) map.get("schedule"))
                 .mentionedRole(ServerRoleEnum.getByTitle((String) map.get("mention")))
                 .build();
 
@@ -108,6 +109,7 @@ public class CommandsList {
                 .text((String) map.get("text"))
                 .players(new ArrayList<>())
                 .orgId(event.getAuthor().getId())
+                .schedule((List<WeekEnum>) map.get("schedule"))
                 .mentionedRole(ServerRoleEnum.getByTitle((String) map.get("mention")))
                 .build();
 
@@ -170,9 +172,12 @@ public class CommandsList {
         } else throw new ServerRoleNotFoundException();
     }
 
-    public void aboutMe(Message message){
-       Set<String> names = currentEvents.getNamesByPlayerId(message.getAuthor().getId());
-       message.getChannel().sendMessage(names.stream().reduce((result, name) -> result += name + "\n").orElse("Ошибко T_T")).queue();
+    public void aboutMe(Message message) {
+        Set<String> names = currentEvents.getNamesByPlayerId(message.getAuthor().getId());
+        if (names.size() == 0) {
+            message.getChannel().sendMessage("Записей нет").queue();
+        }
+        message.getChannel().sendMessage(names.stream().reduce((result, name) -> result += name + "\n").orElse("Ошибко T_T")).queue();
     }
 
     public void tryDeletingEvent(MessageDeleteEvent event) {
