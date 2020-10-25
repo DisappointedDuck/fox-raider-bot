@@ -45,7 +45,9 @@ public class ScheduleService {
     }
 
     private void startEvent(GameEvent e) {
-        eventHolder.removeEventByMessageId(e.getMessage().getId());
+        if (e.getSchedule() == null || e.getSchedule().isEmpty()) {
+            eventHolder.removeEventByMessageId(e.getMessage().getId());
+        }
         e.sendStartMessage();
     }
 
