@@ -27,17 +27,17 @@ public class StartupController {
         CommonProperties.CHANNEL = CHANNEL;
         CommonProperties.STORE = STORE;
         CommonProperties.GUILD = message.getGuild();
-        List<Message> history = message.getGuild().getTextChannelById(CommonProperties.STORE).getHistory().retrievePast(100).complete();
+        List<Message> history = message.getGuild().getTextChannelById(CommonProperties.STORE).getHistory().retrievePast(40).complete();
         for (Message msg : history) {
             try {
                 String text = msg.getContentDisplay();
                 if (text.startsWith("<game-event>")) {
                     startupService.bootGameEvent(msg);
-                    break;
+                    continue;
                 }
                 if (text.startsWith("<hard-game-event>")) {
                     startupService.bootHardGameEvent(msg);
-                    break;
+                    continue;
                 }
             } catch (Exception e) {
                 log.error("Could not load saved game" + e);

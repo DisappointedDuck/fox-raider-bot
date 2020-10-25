@@ -78,7 +78,6 @@ public class CommandsList {
             }
         });
 
-
     }
 
     public void showGames(MessageReceivedEvent event) {
